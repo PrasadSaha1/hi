@@ -1,6 +1,6 @@
 '''
 Notes -
-The position of many x positions of a widget being placed are centred.
+The position of many x positions of a widget being placed are centered.
 If they are centered in the middle of the screen, for example, the x position was found by 300 (half of the oringial screen size, changed with x_location_change) subtracted by half tie width of the widget
 If there is an identifier that could be for cumulative or quarterly but which one it is isn't in the name, it is likely quarterly
 Classes should be unique in name, but there is nothing forcing that in most cases. The second class of that name may be forgotten when data is imported
