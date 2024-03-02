@@ -466,7 +466,7 @@ class GPACalculator:
                 messagebox.showerror("Remove Class Error", "Please enter a name for the class before removing it")
             else:
                 self.class_data_cumulative.remove(classes_of_year[-1]) #removes the last class from class_data_cumulative
-                for index, Class in enumerate(self.for_export):
+                for Class in self.for_export:
                     try: #if the name of the class is the same as the name for this class in self.for_export
                         if classes_of_year[-1][0][0].get() == Class[0][0]:
                             self.for_export.remove(Class)
