@@ -1,13 +1,11 @@
 '''
-Notes -
+Note -
 The position of many x positions of a widget being placed are centred.
-If they are centered in the middle of the screen, for example, the x position was found by 300 (half of the oringial screen size, changed with x_location_change) subtracted by half tie width of the widget
-If there is an identifier that could be for cumulative or quarterly but which one it is isn't in the name, it is likely quarterly
-Classes should be unique in name, but there is nothing forcing that in most cases. The second class of that name may be forgotten when data is imported
+For example, if the widget is centered in the middle of the screen, the x position was found by 300 (half of the original screen size, changed with x_location_change) subtracted by half of the widget's width
 '''
 
 #importing tkinter, the messagebox module, and simpledialog. Everything from tkinter is imported for convenience
-from tkinter import * #tkinter may need to be install with pip in some instances
+from tkinter import * #tkinter may need to be installed with pip in some instances
 from tkinter import messagebox, simpledialog
 from math import factorial #needed to make a big number for the maximum grade to convert to an A+
 
@@ -18,7 +16,7 @@ import ast #for parsing the file
 
 #these modules deal with making the pdf
 from reportlab.lib.pagesizes import letter #reportlab must be installed with pip
-from reportlab.pdfgen import canvas #if reportlab can not be installed for whatever reason, comment out these lines and put pass in save_my_gpa_func in LoadingData, commenting everything else out
+from reportlab.pdfgen import canvas #if reportlab can not be installed for whatever reason, comment out these lines and put pass in upload_PDF_func in LoadingData, commenting everything else out
 import webbrowser #opens the PDF
 import datetime #to get the date
 
@@ -41,8 +39,8 @@ window.config(background=BACKGROUND_COLOR)
 screen = "home"
 
 #these variables will be used to prevent entry boxes from entering in data multiple times (ie, "17" would only appear once, not "1717171717171...")
-first_frame_cumulative_GPA = True
 first_frame_settings = True
+first_frame_more_info = True
 first_frame_previous_data_classes = True
 
 data_loaded = False #Used to prevent data from being loaded in multiple times
@@ -216,10 +214,10 @@ class GPACalculator:
                                    bg=BACKGROUND_COLOR, fg=TEXTCOLOR, activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR)
 
         #this is the text above the entry area for quarterly GPA
-        self.class_name_label = Label(window, text="Class Name", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.grade_label = Label(window, text="Grade", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.weight_label = Label(window, text="Weight", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.credit_label = Label(window, text="Credit", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
+        self.class_name_label_quarterly = Label(window, text="Class Name", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
+        self.grade_label_quarterly = Label(window, text="Grade", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
+        self.weight_label_quarterly = Label(window, text="Weight", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
+        self.credit_label_quarterly = Label(window, text="Credit", font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
 
         #these are the buttons at the bottom of the window (add class, delete class, calculate GPA)
         self.add_new_class = Button(window, text="Add New Class", command=self.add_new_class_quarterly_func, font=(FONT, 20), bg=BACKGROUND_COLOR, fg=TEXTCOLOR, activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR)
@@ -419,8 +417,7 @@ class GPACalculator:
             weight_menu.config(bg=BACKGROUND_COLOR, fg=TEXTCOLOR, highlightthickness=0,
                                activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR, width=5, font=(FONT, 10))
 
-            temporary_class_ID = self.class_ID #this varaible will be stored for the more_info parameter
-
+            temporary_class_ID = self.class_ID #this variable will be stored for the more_info parameter
             #this button opens the place where the user inputs information about each term for a class
             more_info = Button(window, text="More", command= lambda: self.more_info_func(Class=temporary_class_ID), font=(FONT, 10),
                                bg=BACKGROUND_COLOR, fg=TEXTCOLOR, activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR)
@@ -501,22 +498,23 @@ class GPACalculator:
         for users_class in self.class_data_cumulative:
             if users_class[13] == Class: #this gets the class ID and matches it with the class that was next to the more_info pressed
                 class_name = users_class[0][0].get()
+                self.class_name_length = len(class_name) * 10 #the length of the class name in pixel, needed to centralize text. It must be defined as self. as it will be used in the place_widgets_in_more_info function
                 weight = users_class[2][0]["text"] #this info is to be displayed on the screen
                 credit = users_class[3][0].get()
 
-                current_Q1_grade = users_class[6][0] #the current grade for each term in based on info in class_data_cumulative
-                current_Q2_grade = users_class[7][0] #at the start, it's ""
-                current_E2_grade = users_class[8][0]
-                current_Q3_grade = users_class[9][0]
-                current_Q4_grade = users_class[10][0]
-                current_E4_grade = users_class[11][0]
+                self.current_Q1_grade = users_class[6][0] #the current grade for each term in based on info in class_data_cumulative
+                self.current_Q2_grade = users_class[7][0] #at the start, it's ""
+                self.current_E2_grade = users_class[8][0]
+                self.current_Q3_grade = users_class[9][0]
+                self.current_Q4_grade = users_class[10][0]
+                self.current_E4_grade = users_class[11][0]
 
-                current_Q1_weight = users_class[6][1] #the % weight of the term for the user's F4 grade
-                current_Q2_weight = users_class[7][1] #at the start, it's 21.25% for the quarter, 5% for the midterm, and 10% for the final
-                current_E2_weight = users_class[8][1]
-                current_Q3_weight = users_class[9][1]
-                current_Q4_weight = users_class[10][1]
-                current_E4_weight = users_class[11][1]
+                self.current_Q1_weight = users_class[6][1] #the % weight of the term for the user's F4 grade
+                self.current_Q2_weight = users_class[7][1] #at the start, it's 21.25% for the quarter, 5% for the midterm, and 10% for the final
+                self.current_E2_weight = users_class[8][1]
+                self.current_Q3_weight = users_class[9][1]
+                self.current_Q4_weight = users_class[10][1]
+                self.current_E4_weight = users_class[11][1]
 
         if screen == "more_8": #there is a different screen for each year due to the back button, but there are no other differences
             screen = "class_term_grades_chooser_8"
@@ -586,10 +584,14 @@ class GPACalculator:
         self.save_button = Button(window, text="Save", command= lambda: self.save_button_func(Class=Class), font=(FONT, 20),
                                   bg=BACKGROUND_COLOR, fg=TEXTCOLOR, activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR)
 
-        #these are the locations of each widget on the screen. They are defined here for convenience
+    def place_widgets_in_more_info(self):
+        #widgets at the top of the screen
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         self.term_grades_top.place(x=161 + x_location_change, y=20)
         self.terms_help_text.place(x=-7 + x_location_change, y=60)
-        self.term_grade_class_name.place(x=173 + x_location_change, y=170)
+
+        #information about the class
+        self.term_grade_class_name.place(x=227 + x_location_change - self.class_name_length / 2, y=170) #173 + x_location_change - half the length of the class name. This is for centralization
         self.term_grade_weight.place(x=263 + x_location_change, y=210)
         self.term_grade_credit.place(x=257 + x_location_change, y=250)
 
@@ -624,36 +626,28 @@ class GPACalculator:
 
         self.save_button.place(x=263 + x_location_change, y=550)
 
-        #this puts the current grade for a term in the entry box. These will always be defined as they are created with the class
-        self.Q1_entry.insert(0, current_Q1_grade)
-        self.Q2_entry.insert(0, current_Q2_grade)
-        self.E2_entry.insert(0, current_E2_grade)
-        self.Q3_entry.insert(0, current_Q3_grade)
-        self.Q4_entry.insert(0, current_Q4_grade)
-        self.E4_entry.insert(0, current_E4_grade)
+        if first_frame_more_info: #makes sure this only occurs on the first frame of the screen
+            #this puts the current grade for a term in the entry box. These will always be defined as they are created with the class
+            self.Q1_entry.insert(0, self.current_Q1_grade)
+            self.Q2_entry.insert(0, self.current_Q2_grade)
+            self.E2_entry.insert(0, self.current_E2_grade)
+            self.Q3_entry.insert(0, self.current_Q3_grade)
+            self.Q4_entry.insert(0, self.current_Q4_grade)
+            self.E4_entry.insert(0, self.current_E4_grade)
 
-        #this puts the current weight for a term in the entry box
-        self.Q1_weight.insert(0, current_Q1_weight)
-        self.Q2_weight.insert(0, current_Q2_weight)
-        self.E2_weight.insert(0, current_E2_weight)
-        self.Q3_weight.insert(0, current_Q3_weight)
-        self.Q4_weight.insert(0, current_Q4_weight)
-        self.E4_weight.insert(0, current_E4_weight)
+            #this puts the current weight for a term in the entry box
+            self.Q1_weight.insert(0, self.current_Q1_weight)
+            self.Q2_weight.insert(0, self.current_Q2_weight)
+            self.E2_weight.insert(0, self.current_E2_weight)
+            self.Q3_weight.insert(0, self.current_Q3_weight)
+            self.Q4_weight.insert(0, self.current_Q4_weight)
+            self.E4_weight.insert(0, self.current_E4_weight)
 
         #this allows certain labels on this screen to have text appear when they are hovered over
         for label in [self.term_grade_label, self.term_weight_label,
                       self.Q1, self.Q2, self.E2, self.Q3, self.Q4, self.E4]:
             label.bind("<Enter>", start_hover)
             label.bind("<Leave>", end_hover)
-
-        #this appends all the widgets to a list to make it easy to place them later on
-        self.term_info_widgets.append(
-            [self.term_grades_top, self.terms_help_text, self.term_grade_class_name, self.term_grade_weight, self.term_grade_credit, self.terms_text,
-             self.term_grade_label, self.term_weight_label, self.Q1, self.Q1_entry,
-             self.Q1_weight, self.Q2, self.Q2_entry, self.Q2_weight, self.E2,
-             self.E2_entry, self.E2_weight, self.Q3, self.Q3_entry,
-             self.Q3_weight, self.Q4, self.Q4_entry, self.Q4_weight,
-             self.E4, self.E4_entry, self.E4_weight, self.save_button])
 
     def save_button_func(self, Class: int) -> None: #the parameter is the ID of the class
         '''This function saves the data for the term grades for a class'''
@@ -750,7 +744,7 @@ class GPACalculator:
                     new_class.append(Class[12])
                     self.for_export[index][1][0] = Class[12] #puts grade in for_export
                 else:
-                    new_class.append(Class[1][0].get()) #grade user recieved without terms
+                    new_class.append(Class[1][0].get()) #grade user received without terms
                     self.for_export[index][1][0] = Class[1][0].get()
                 if Class[2][0]["text"] == "R": #if regular course
                     new_class.append(1)
@@ -772,7 +766,7 @@ class GPACalculator:
             for index, Class in enumerate(self.class_data_quarterly): #quarterly GPA
                 new_class = []
                 new_class.append(Class[0][0].get()) #name of class
-                new_class.append(Class[1][0].get()) #grade user recieved
+                new_class.append(Class[1][0].get()) #grade user received
                 if Class[2][0]["text"] == "R": #regular course
                     new_class.append(1)
                 elif Class[2][0]["text"] == "H": #honors course
@@ -798,18 +792,18 @@ class GPACalculator:
                     for Class in self.data2: #raises an error if an input is negative
                         if float(Class[1]) < 0 or float(Class[3]) < 0:
                             raise ValueError
-                    #unweighted_total_grade_list makes a list of every grade the user has (stored in self.data2), multipled by the amount of credit for the class.
+                    #unweighted_total_grade_list makes a list of every grade the user has (stored in self.data2), multiplied by the amount of credit for the class.
                     unweighted_total_grade_list_100 = list(map(lambda Class: float(Class[1]) * float(Class[3]), self.data2))
                     #weighted is similar but also includes the weight of the class
                     weighted_total_grade_list_100 = list(map(lambda Class: float(Class[1]) * float(Class[2]) * float(Class[3]), self.data2))
                     #this is a list of the total points available in every class (100) * the credit for the class
                     total_points_available_list_100 = list(map(lambda Class: 100 * float(Class[3]), self.data2))
                     #this replaces the already defines weighted and unweighted GPA widgets. It adds up the elements in the respective lists and divides it by the total points.
-                    #the GPA is rounded to 4 decmial places, with zeroes shown.
+                    #the GPA is rounded to 4 decimal places, with zeroes shown.
                     self.unweighted_gpa = "{:.4f}".format(sum(unweighted_total_grade_list_100) / sum(total_points_available_list_100) * 100)
                     self.weighted_gpa = "{:.4f}".format(sum(weighted_total_grade_list_100) / sum(total_points_available_list_100) * 100)
                     gpa_calculated = True #this is for exporting data
-                except ValueError as e:
+                except ValueError:
                     for Class in self.data2:
                         if Class[1] in self.grades_4:
                             #if the user entered a letter grade for 100.0 scale
@@ -833,7 +827,7 @@ class GPACalculator:
                                 raise ValueError
                     for Class in self.data2:
                         if Class[1] in self.grades_4: #if it is a letter grade, Class[1] is the grade
-                            #this appends the grade the user recieved from 0.0-4.0, converted from a letter grade
+                            #this appends the grade the user received from 0.0-4.0, converted from a letter grade
                             unweighted_total_grade_list_4.append(self.grades_4[Class[1]] * float(Class[3]))
                             #weighted grade includes weight
                             weighted_total_grade_list_4.append(self.grades_4[Class[1]] * float(Class[3]) * float(Class[2]))
@@ -882,11 +876,11 @@ class HelpMenu:
         #widgets for instructions page 1
         self.instructions_top = Label(window, text="Instructions",
                                         font=(FONT, 30), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.intro_instructions = Label(window, text="This calculator allows students of Monroe-Woodbury High School \n to calculate their quarterly and cumulative GPA.",
+        self.intro_instructions = Label(window, text="This calculator allows students of Monroe-Woodbury High School \nto calculate their quarterly and cumulative GPA.",
                                         font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.quarterly_GPA_instructions = Label(window, text="For a simple, quarterly GPA, click Calculate My GPA, and then click Quarterly \n Fill in all the instructions, adding classes as you need to, and then hit calculate my GPA \n Because this is meant to be a simple experience, data for quarterly GPA is not stored.",
+        self.quarterly_GPA_instructions = Label(window, text="For a simple, quarterly GPA, click Calculate My GPA, and then click Quarterly \nFill in all the instructions, adding classes as you need to, and then hit calculate my GPA \nBecause this is meant to be a simple experience, data for quarterly GPA is not stored.",
                                         font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
-        self.cumulative_GPA_instructions = Label(window, text="For a more comprehensive GPA, hit Annual/Cumulative. \n Here, you can receive your cumulative GPA for all the classes you took in High School \n If you in the middle of a year, update the credit for each class \n For example, if 3 quarters have passed, full year courses get .75 credit \n Previous data is stored and can be loaded in on the Data Information page.\n A PDF of your cumulative grades is also available in Data Information.",
+        self.cumulative_GPA_instructions = Label(window, text="For a more comprehensive GPA, hit Annual/Cumulative. \nHere, you can receive your cumulative GPA for all the classes you took in High School \nIf you in the middle of a year, update the credit for each class \nFor example, if 3 quarters have passed, full year courses get .75 credit \nPrevious data is stored and can be loaded in on the Data Information page.\n A PDF of your cumulative grades is also available in Data Information.",
                                         font=(FONT, 12), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
         self.QA_top = Label(window, text="Questions and Answers",
                                         font=(FONT, 30), bg=BACKGROUND_COLOR, fg=TEXTCOLOR)
@@ -1155,62 +1149,74 @@ class LoadingData:
     def upload_PDF_func(self) -> None:
         '''For now, this function has not been finished'''
         if not gpa_calculated: #GPA must have been calculated to prevent an error
-            messagebox.showerror("Export GPA Error", "Please hit calculate GPA once on the cumulative screen before exporting your data")
+            messagebox.showerror("Export GPA Error", "Please hit Calculate my GPA once on the cumulative screen before exporting your data")
         else: #check for errors
             error_in_GPA_calculation = gpa_calculator.whats_my_gpa_func() #if a return statement was triggered
-            if error_in_GPA_calculation != "error": #the GPA was calculated sucessfully
+            if error_in_GPA_calculation != "error": #the GPA was calculated successfully
                 answer = messagebox.askyesno("Export GPA", "This will open a PDF on a new screen. Are you sure you want to continue?")
                 if not answer: #if they say no, do nothing
                     pass
                 else:
-                    #user's name
-                    users_name = simpledialog.askstring("Name", "Please enter your name:")
-                    y_coord = 750 #starting y_coordinate
-                    file = "GPA.pdf" #name of PDF
-                    Canvas = canvas.Canvas(file, pagesize=letter) #canvas to draw on
+                    def draw_centered_text(text: str, y: int) -> None:
+                        '''This function centralizes elements of the PDF'''
+                        width = Canvas._pagesize[0] #gets the width from [width, height]
+                        text_width = Canvas.stringWidth(text) #gets the width of the text to be centralized
+                        x = (width - text_width) / 2 #finds the x value
+                        Canvas.drawString(x, y, text) #draws the text
 
-                    current_date = datetime.date.today() #the date
+                    users_name = simpledialog.askstring("Name", "Please enter your name:")
+                    y_coord = 750  #starting y_coordinate
+                    file = "GPA.pdf"  #name of PDF
+                    Canvas = canvas.Canvas(file, pagesize=letter)  #canvas to draw on
+
+                    current_date = datetime.date.today()  # the date
                     formatted_date = current_date.strftime("%B %d, %Y")
 
                     #information for the top
-                    Canvas.drawString(150, y_coord, "Monroe-Woodbury High School Grade Report")
-                    y_coord -= 20 #the y coordinate decreases to make sure information doesn't overlap
-                    Canvas.drawString(225, y_coord, users_name)
+                    draw_centered_text("Monroe-Woodbury High School Grade Report", y_coord)
+                    y_coord -= 20  #the y coordinate decreases to make sure information doesn't overlap
+                    draw_centered_text(users_name, y_coord)
                     y_coord -= 20
-                    Canvas.drawString(225, y_coord, formatted_date)
-                    y_coord -= 20
+                    draw_centered_text(formatted_date, y_coord)
+                    y_coord -= 10
 
-                    #information about class data
-                    Canvas.drawString(100, y_coord, "Class")
-                    Canvas.drawString(300, y_coord, "Grade")
-                    Canvas.drawString(350, y_coord, "Credit")
-                    Canvas.drawString(400, y_coord, "Year")
+                    for year in range(8, 13):  #range() is exclusive, so it goes up to 13 instead of 12
+                        num_classes = 0
+                        for Class in gpa_calculator.class_data_cumulative:
+                            if Class[5] == year:  #only classes for that year
+                                num_classes += 1
+
+                        if num_classes:  #if there is at least one class for that grade
+                            y_coord -= 20
+
+                            draw_centered_text(f"{year}th Grade", y_coord)
+                            y_coord -= 20
+
+                            #information about class data
+                            Canvas.drawString(150, y_coord, "Class")
+                            Canvas.drawString(350, y_coord, "Grade")
+                            Canvas.drawString(400, y_coord, "Credit")
+                            y_coord -= 20
+
+                            for Class in gpa_calculator.class_data_cumulative:
+                                if Class[5] == year:  #only classes for that year
+                                    for index, widget in enumerate(Class[0:4]): #stops at the index for the class's credit
+                                        #index 2 is skipped as the weight is not needed
+                                        if index == 0:  #class name, takes up more space than the others (50 units vs 200)
+                                            Canvas.drawString(150, y_coord, widget[0].get())
+                                        elif index == 1:  #Grade
+                                            Canvas.drawString(350, y_coord, widget[0].get())
+                                        elif index == 3:  #credit
+                                            Canvas.drawString(400, y_coord, widget[0].get())
+                                    y_coord -= 20
 
                     y_coord -= 20
-
-                    for Class in gpa_calculator.class_data_cumulative:
-                        x_coord = 100 #x position
-                        for index, widget in enumerate(Class[0:6]): #up to year of the class
-                            #index 2 is skipped as the weight is not needed, and index 4 is skipped as that is more info
-                            if index == 0: #class name
-                                Canvas.drawString(x_coord, y_coord, widget[0].get())
-                                x_coord = 300 #takes 200 units, rest take up 50
-                            elif index == 1: #Grade
-                                Canvas.drawString(x_coord, y_coord, widget[0].get())
-                                x_coord = 350
-                            elif index == 3: #credit
-                                Canvas.drawString(x_coord, y_coord, widget[0].get())
-                                x_coord = 400
-                            elif index == 5: #year class was taken in
-                                Canvas.drawString(x_coord, y_coord, str(widget)) #the widget is a number, not an actual widget
-                        y_coord -= 20
+                    draw_centered_text(f"Unweighted GPA: {gpa_calculator.unweighted_gpa}", y_coord)
                     y_coord -= 20
-                    Canvas.drawString(200, y_coord, f"Unweighted GPA: {gpa_calculator.unweighted_gpa}")
-                    y_coord -= 20
-                    Canvas.drawString(200, y_coord, f"Weighted GPA: {gpa_calculator.weighted_gpa}")
-
+                    draw_centered_text(f"Weighted GPA: {gpa_calculator.weighted_gpa}", y_coord)
                     Canvas.save()
                     webbrowser.open(file)
+
 
 #this is to make sure entry boxes only have the text entered once for the grade from term info
 first_frame_more_8 = [True]
@@ -1267,7 +1273,7 @@ def display_classes(year, first_frame_more_year, first_frame_previous_more_year)
 
 def update_ui() -> None:
     """This function updates the UI everytime the user enters a new screen"""
-    global first_frame_settings, first_frame_cumulative_GPA
+    global first_frame_settings, first_frame_more_info
 
     if screen == "home": #this will be seen whenever the user goes home or at the start of the program
         home_screen.universal_back_button.place_forget() #the back button is forgotten here rather than elsewhere as multiple screens use it
@@ -1305,11 +1311,11 @@ def update_ui() -> None:
         gpa_calculator.current_scale.place(x=260 + x_location_change, y=95)
         gpa_calculator.change_scale.place(x=325 + x_location_change, y=90)
 
-        #this is the the text above the class entry area
-        gpa_calculator.class_name_label.place(x=137 + x_location_change, y=128)
-        gpa_calculator.grade_label.place(x=259 + x_location_change, y=128)
-        gpa_calculator.weight_label.place(x=320 + x_location_change, y=128)
-        gpa_calculator.credit_label.place(x=387 + x_location_change, y=128)
+        #this is the text above the class entry area
+        gpa_calculator.class_name_label_quarterly.place(x=137 + x_location_change, y=128)
+        gpa_calculator.grade_label_quarterly.place(x=259 + x_location_change, y=128)
+        gpa_calculator.weight_label_quarterly.place(x=320 + x_location_change, y=128)
+        gpa_calculator.credit_label_quarterly.place(x=387 + x_location_change, y=128)
 
         for Class in gpa_calculator.class_data_quarterly:
             for part in Class: #part = Class[0], places the part (class)
@@ -1325,8 +1331,8 @@ def update_ui() -> None:
         gpa_calculator.delete_class.place(x=70 + x_location_change, y=554)
     else:
         #this forgets most of the widgets
-        for widget in [gpa_calculator.quarterly_top, gpa_calculator.class_name_label, gpa_calculator.grade_label,
-                       gpa_calculator.weight_label, gpa_calculator.credit_label, #gpa_calculator.year_label,
+        for widget in [gpa_calculator.quarterly_top, gpa_calculator.class_name_label_quarterly, gpa_calculator.grade_label_quarterly,
+                       gpa_calculator.weight_label_quarterly, gpa_calculator.credit_label_quarterly, #gpa_calculator.year_label,
                        gpa_calculator.add_new_class, gpa_calculator.whats_my_gpa,
                        gpa_calculator.unweighted_gpa_label, gpa_calculator.weighted_gpa_label, gpa_calculator.delete_class,
                        gpa_calculator.current_scale, gpa_calculator.change_scale, gpa_calculator.GPA_type_label]:
@@ -1364,7 +1370,7 @@ def update_ui() -> None:
         gpa_calculator.more_11.place(x=402 + x_location_change, y=335)
         gpa_calculator.more_12.place(x=87 + x_location_change, y=515)
 
-        #widgets for calcuating the cumulative GPA
+        #widgets for calculating the cumulative GPA
         gpa_calculator.whats_my_gpa.place(x=337 + x_location_change, y=500)
         gpa_calculator.unweighted_gpa_label.place(x=337 + x_location_change, y=560)
         gpa_calculator.weighted_gpa_label.place(x=337 + x_location_change, y=590)
@@ -1378,7 +1384,8 @@ def update_ui() -> None:
                        widget.place_forget()
 
     if screen == "more_8": #the 8th grade classes
-        #the labels at the top
+        #the labels at the top and the universal back button
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         gpa_calculator.top_8.place(x=219 + x_location_change, y=10)
         gpa_calculator.class_name_label_8.place(x=137 + x_location_change, y=60)
         gpa_calculator.grade_label_8.place(x=259 + x_location_change, y=60)
@@ -1403,7 +1410,8 @@ def update_ui() -> None:
                     widget[0].place_forget()
 
     if screen == "more_9": #the 9th grade classes
-        #the labels at the top
+        #the labels at the top and the universal back button
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         gpa_calculator.top_9.place(x=219 + x_location_change, y=10)
         gpa_calculator.class_name_label_9.place(x=137 + x_location_change, y=60)
         gpa_calculator.grade_label_9.place(x=259 + x_location_change, y=60)
@@ -1429,7 +1437,8 @@ def update_ui() -> None:
                     widget[0].place_forget()
 
     if screen == "more_10": #the 10th grade classes
-        #the labels at the top
+        #the labels at the top and the universal back button
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         gpa_calculator.top_10.place(x=211 + x_location_change, y=10)
         gpa_calculator.class_name_label_10.place(x=137 + x_location_change, y=60)
         gpa_calculator.grade_label_10.place(x=259 + x_location_change, y=60)
@@ -1455,7 +1464,8 @@ def update_ui() -> None:
                     widget[0].place_forget()
 
     if screen == "more_11": #the 11th grade classes
-        #the labels at the top
+        #the labels at the top and the universal back button
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         gpa_calculator.top_11.place(x=211 + x_location_change, y=10)
         gpa_calculator.class_name_label_11.place(x=137 + x_location_change, y=60)
         gpa_calculator.grade_label_11.place(x=259 + x_location_change, y=60)
@@ -1481,7 +1491,8 @@ def update_ui() -> None:
                     widget[0].place_forget()
 
     if screen == "more_12": #the 12th grade classes
-        #the labels at the top
+        #the labels at the top and the universal back button
+        home_screen.universal_back_button.place(x=0 + x_location_change, y=0)
         gpa_calculator.top_12.place(x=211 + x_location_change, y=10)
         gpa_calculator.class_name_label_12.place(x=137 + x_location_change, y=60)
         gpa_calculator.grade_label_12.place(x=259 + x_location_change, y=60)
@@ -1506,12 +1517,21 @@ def update_ui() -> None:
                 for widget in Class[0:5]:
                     widget[0].place_forget()
 
-    #if the screen is not a term grades chooser, don't display those widgets
-    if screen not in ["class_term_grades_chooser_8", "class_term_grades_chooser_9", "class_term_grades_chooser_10", "class_term_grades_chooser_11", "class_term_grades_chooser_12"]:
-        if gpa_calculator.term_info_widgets:
-            for widget in gpa_calculator.term_info_widgets[0]: #[0] as the widgets are stored in a list
+    if screen in ["class_term_grades_chooser_8", "class_term_grades_chooser_9", "class_term_grades_chooser_10", "class_term_grades_chooser_11", "class_term_grades_chooser_12"]:
+        gpa_calculator.place_widgets_in_more_info()
+        first_frame_more_info = False
+    else:
+        first_frame_more_info = True
+        try:
+            for widget in [gpa_calculator.term_grades_top, gpa_calculator.terms_help_text, gpa_calculator.term_grade_class_name, gpa_calculator.term_grade_weight, gpa_calculator.term_grade_credit,
+                             gpa_calculator.terms_text,gpa_calculator.term_grade_label, gpa_calculator.term_weight_label, gpa_calculator.Q1, gpa_calculator.Q1_entry,
+                             gpa_calculator.Q1_weight, gpa_calculator.Q2, gpa_calculator.Q2_entry, gpa_calculator.Q2_weight, gpa_calculator.E2,
+                             gpa_calculator.E2_entry, gpa_calculator.E2_weight, gpa_calculator.Q3, gpa_calculator.Q3_entry,
+                             gpa_calculator.Q3_weight, gpa_calculator.Q4, gpa_calculator.Q4_entry, gpa_calculator.Q4_weight,
+                             gpa_calculator.E4, gpa_calculator.E4_entry, gpa_calculator.E4_weight, gpa_calculator.save_button]:
                 widget.place_forget()
-            gpa_calculator.term_info_widgets.clear() #cleares the list
+        except AttributeError: #if the term grade chooser screen has not been opened yet, this harmless error will occur
+            pass
 
     if screen == "help_menu":
         #this places all the widgets that appear on the home screen for the help menu
@@ -1601,7 +1621,7 @@ def update_ui() -> None:
         help_menu.confirm_settings_button.place(x=204 + x_location_change, y=485)
 
         if first_frame_settings:
-            #if this is the first frame for the settings (in the whole program), the information will be inputed
+            #if this is the first frame for the settings (in the whole program), the information will be inputted
             #Honors and AP weight
             help_menu.change_honors_weight_100_entry.insert(0, str(gpa_calculator.honors_scale_100))
             help_menu.change_AP_weight_100_entry.insert(0, str(gpa_calculator.AP_scale_100))
@@ -1662,19 +1682,19 @@ def save_data_when_program_finished(sig, frame) -> None:
     file_read.close()
     sys.exit() #ends the program
 
-#this is the text that will appear when the label is hovered over. Must be defined earlier as it's refrenced in update_ui to lift it
+#this is the text that will appear when the label is hovered over. Must be defined earlier as it's referenced in update_ui to lift it
 widget_help_label = Label(window, bg=TEXTCOLOR, fg=BACKGROUND_COLOR)
 
 def update_frame() -> None:
-    '''This updates the program once per 17 ms (about 60 fps), updating the ui and running functions for the classes. It also validiates user input'''
+    '''This updates the program once per 17 ms (about 60 fps), updating the ui and running functions for the classes. It also validates user input'''
     global x_location_change, time, file_empty
     #these lists contain every entry box and option menu in the program
     entry_boxes = [widget for widget in window.winfo_children() if isinstance(widget, Entry)]
     option_menus = [widget for widget in window.winfo_children() if isinstance(widget, OptionMenu)]
-    time += 1 #this detemines how many frames have passed
+    time += 1 #this determines how many frames have passed
     gpa_calculator.get_class_data() #must be ran every frame
     update_ui() #must be ran every frame
-    signal.signal(signal.SIGINT, save_data_when_program_finished) #this will append the data to the file if the program ends with a Keyboard Interupt
+    signal.signal(signal.SIGINT, save_data_when_program_finished) #this will append the data to the file if the program ends with a Keyboard Interrupt
 
     i = 0 #resets every frame
 
@@ -1707,7 +1727,7 @@ def update_frame() -> None:
                 error_labels[i].lift()
             else:
                 error_labels[i].place_forget() #if entry isn't on screen, there should be no error label
-        else: #removes the error label. If it never existed nothing happens (which is what should happen)
+        else: #removes the error label. If it never existed, nothing happens (which is what should happen)
             error_labels[i].place_forget()
         i += 1 #moves to the next index in error_labels
 
@@ -1722,9 +1742,9 @@ def update_frame() -> None:
             error_labels[i].place_forget()
         i += 1 #increases with the same variable as for entry boxes
     for entry in entry_boxes:
-        entry.config(selectbackground="black") #this makes it so when text is hightlighted, the highlight it black. It is done here as it was not added until late in development
+        entry.config(selectbackground="black") #this makes it so when text is highlighted, the highlight it black. It is done here as it was not added until late in development
 
-    x_location_change = (window.winfo_width() / 2) - 300 #this varaible accounts for change in the screen width and is used to centralize everything. It is located here rather than at the start as it must be updated.
+    x_location_change = (window.winfo_width() / 2) - 300 #this variable accounts for change in the screen width and is used to centralize everything. It is located here rather than at the start as it must be updated.
     #the default size is 700x700, so this will be 50 by default. Much of the program was made with this at 600x600.
     widget_help_label.lift()  #assures the help text for hovering over a widget is above all other lifted widgets
     window.after(17, update_frame) #the function is recursive and will run from the start of the program to the end of it
@@ -1738,7 +1758,7 @@ data_menu = LoadingData()
 update_frame() #runs the function to update the program
 
 #this list is every label that has text appear when hovered over
-labels_for_help_text_when_hover = [gpa_calculator.class_name_label, gpa_calculator.grade_label, gpa_calculator.weight_label, gpa_calculator.credit_label, #labels for entry boxes, quarter GPA screen
+labels_for_help_text_when_hover = [gpa_calculator.class_name_label_quarterly, gpa_calculator.grade_label_quarterly, gpa_calculator.weight_label_quarterly, gpa_calculator.credit_label_quarterly, #labels for entry boxes, quarter GPA screen
                                    gpa_calculator.GPA_type_label, gpa_calculator.current_scale, gpa_calculator.unweighted_gpa_label, gpa_calculator.weighted_gpa_label, #labels for UW vs W gpa and 100.0 vs 4.0 gpa
                                    gpa_calculator.year_8_label,  #states to only enter high school level classes for 8th Grade
                                    gpa_calculator.class_name_label_8, gpa_calculator.grade_label_8, gpa_calculator.weight_label_8, gpa_calculator.credit_label_8, #labels for entry boxes above 8th grade, cumulative GPA screen
@@ -1765,9 +1785,9 @@ def start_hover(event) -> None:
                     x_change = 91 #length of the help text, needed if the help text were to be displayed from the left
                 elif event.widget.winfo_x() == 333: #grade
                     if gpa_calculator.gpa_scale == 100.0: #can't be letter grade
-                        widget_help_label.config(text="Must be a positive number. \nLetter grades are not supported on 100.0 scale")
+                        widget_help_label.config(text="Must be a positive number. \nIn addition, letter grades are not supported on the 100.0 scale")
                         lines = 2
-                        x_change = 247
+                        x_change = 330
                     elif gpa_calculator.gpa_scale == 4.0:
                         widget_help_label.config(text="Must be a number or valid letter grade")
                         lines = 1
@@ -1776,19 +1796,19 @@ def start_hover(event) -> None:
                     widget_help_label.config(text="Must be a positive number.")
                     lines = 1
                     x_change = 150
-            if event.widget in [gpa_calculator.class_name_label, gpa_calculator.class_name_label_8, gpa_calculator.class_name_label_9,
+            if event.widget in [gpa_calculator.class_name_label_quarterly, gpa_calculator.class_name_label_8, gpa_calculator.class_name_label_9,
                                 gpa_calculator.class_name_label_10, gpa_calculator.class_name_label_11, gpa_calculator.class_name_label_12]:
                 widget_help_label.config(text="Enter the name of your class")
                 #this displays information when the user hovers over class_name_label
                 lines = 1
                 x_change = 155
-            elif event.widget in [gpa_calculator.grade_label, gpa_calculator.grade_label_8, gpa_calculator.grade_label_9,
+            elif event.widget in [gpa_calculator.grade_label_quarterly, gpa_calculator.grade_label_8, gpa_calculator.grade_label_9,
                                   gpa_calculator.grade_label_10, gpa_calculator.grade_label_11, gpa_calculator.grade_label_12]:
                 widget_help_label.config(text="Enter the grade you received in that class")
                 #info for grade label
                 lines = 1
                 x_change = 221
-            elif event.widget in [gpa_calculator.weight_label, gpa_calculator.weight_label_8, gpa_calculator.weight_label_9,
+            elif event.widget in [gpa_calculator.weight_label_quarterly, gpa_calculator.weight_label_8, gpa_calculator.weight_label_9,
                                   gpa_calculator.weight_label_10, gpa_calculator.weight_label_11, gpa_calculator.weight_label_12]:
                 #info for weight label, with different responses based on the GPA scale
                 if gpa_calculator.gpa_scale == 100.0:
@@ -1799,7 +1819,7 @@ def start_hover(event) -> None:
                     widget_help_label.config(text=f"Select the weight of the class \n Honors get {gpa_calculator.honors_scale_4} weight and AP gets {gpa_calculator.AP_scale_4} weight \n this can be adjusted in the settings")
                     lines = 3
                     x_change = 269
-            elif event.widget == gpa_calculator.credit_label:
+            elif event.widget == gpa_calculator.credit_label_quarterly:
                 widget_help_label.config(text="Enter the credit for the course \n Every day (A-F) courses usually get 1 credit \n Alternative Day courses usually get .5 credit") #BE SURE TO ALLOW FOR ½ and ¼
                 #for credit label on the quarterly screen
                 lines = 3
