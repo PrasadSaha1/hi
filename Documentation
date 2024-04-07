@@ -1,0 +1,6 @@
+**Modules** The modules used for this project were Tkinter (to make the GUI), math (to make a big number), os (to find the size of the file),
+signal (to detect KeyBoardInterrupt), sys (to end the program upon KeyBoardInterrupt), ast (to parse the file), 
+reportlab (to make a PDF), webbrowser (to open the PDF), datetime (to get the date for the PDF). 
+Tkinter and Reportlab may needed to be installed using pip.
+
+**Image** The image was taken for free from https://www.freeiconspng.com/images/error-2 
