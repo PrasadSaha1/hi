@@ -5,6 +5,8 @@ Tkinter and Reportlab may needed to be installed using pip.
 
 **Image** The image was taken for free from https://www.freeiconspng.com/images/error-2
 
+**Changing the Screen** When the user clicks a button to change the screen, a function will run to change the global variable named "screen". Based off that global variable, various widgets will be placed in update_ui, which runs once per frame. If the user was not on a screen, all of the widgets for that screen would be forgotten, which would delete the widgets if they were on the screen, but do nothing if they were not. The universal back button is the same button throughout the program, changing the screen based off the screen the user is currently on. The update_ui function also puts text in entry boxes if neccesary. 
+
 **Saving Data** The program opens a file called "data_for_calc_gpa.txt". The for_export list in the GPACalculator class is appended 
 to whenever the user makes a new class on the cumulative screen. The contents of that list are updated once per frame with the
 get_class_data function in the GPACalculator class. When the program terminates, more information is appended to that list, such as 
