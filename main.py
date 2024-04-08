@@ -16,7 +16,7 @@ import ast #for parsing the file
 
 #these modules deal with making the pdf
 from reportlab.lib.pagesizes import letter #reportlab must be installed with pip
-from reportlab.pdfgen import canvas #if reportlab can not be installed for whatever reason, comment out these lines and put pass in upload_PDF_func in LoadingData, commenting everything else out
+from reportlab.pdfgen import canvas #if reportlab can not be installed for whatever reason, comment out these lines and put pass in upload_PDF_func in DataInformation, commenting everything else out
 import webbrowser #opens the PDF
 import datetime #to get the date
 
@@ -893,7 +893,7 @@ class HelpMenu:
         #widgets for instructions page 2
         self.next_page = Button(window, text="Next Page", command=self.change_page_func, font=(FONT, 20),
                                   bg=BACKGROUND_COLOR, fg=TEXTCOLOR, activebackground=BACKGROUND_COLOR, activeforeground=TEXTCOLOR)
-        self.Q3 = Label(window, text="Question: What is the difference between weighted and unweighted GPA?"
+        self.Q3 = Label(window, text="Question: What should I do if a class is not Regular, Honors, or AP?"
                                     "\n\nAnswer: Regular classes get 1.0 weight, Honors classes get 1.03 (1.125 on 4.0 scale), \nand AP classes get 1.05 (1.25 on 4.0 scale). \nThis is done automatically and can be adjusted in the settings."
                                     "\nFor specific classes - "
                                     "\nDual Enrollment (college) classes that are not AP classes get regular credit."
@@ -1023,8 +1023,8 @@ class HelpMenu:
         except ValueError: #if there is something that isn't float
             messagebox.showerror("Change Settings Error", "Please enter positive numbers for all fields")
 
-class LoadingData:
-    """This class controls the elements for the loading data screen"""
+class DataInformation:
+    """This class controls the elements for the data information screen"""
     def __init__(self) -> None:
         '''This function defines the widgets for this class'''
         self.data_info_top = Label(window, text="Data Information",
@@ -1216,7 +1216,6 @@ class LoadingData:
                     draw_centered_text(f"Weighted GPA: {gpa_calculator.weighted_gpa}", y_coord)
                     Canvas.save()
                     webbrowser.open(file)
-
 
 #this is to make sure entry boxes only have the text entered once for the grade from term info
 first_frame_more_8 = [True]
@@ -1701,7 +1700,7 @@ def update_frame() -> None:
     #validates user input
     for entry in entry_boxes:
         if entry.winfo_ismapped(): #only entry boxes on the screen
-            isfloat = lambda s: s.replace('.', '', 1).isdigit() #sees if the entry has float
+            isfloat = lambda s: s.replace('.', '', 1).isdigit() #sees if the entry has float. Returns False in the presence of a negative
             if entry.winfo_x() == 256 + x_location_change: #grade in more info:
                 if entry.get() != "" and not isfloat(entry.get()): #these entries can be empty, but if filled, they must be float
                     #places the warning sign at the end of the entry
@@ -1749,11 +1748,11 @@ def update_frame() -> None:
     widget_help_label.lift()  #assures the help text for hovering over a widget is above all other lifted widgets
     window.after(17, update_frame) #the function is recursive and will run from the start of the program to the end of it
 
-#this creates instances of each classe
+#this creates instances of each class
 gpa_calculator = GPACalculator()
 home_screen = HomeScreen()
 help_menu = HelpMenu()
-data_menu = LoadingData()
+data_menu = DataInformation()
 
 update_frame() #runs the function to update the program
 
