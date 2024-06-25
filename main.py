@@ -344,35 +344,6 @@ class HoverEventFilter(QObject):
             # return True - usually, this is needed, but it was removed as help text for error signs had unusual behavior with this
         return super().eventFilter(obj, event)
 
-
-class LoadingScreen(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowFlags(Qt.Dialog | Qt.CustomizeWindowHint)
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setLayout(QVBoxLayout())
-        self.label = QLabel("Loading, please wait...", self)
-        self.layout().addWidget(self.label)
-        self.layout().setAlignment(Qt.AlignCenter)
-        self.resize(200, 100)
-
-    def show_loading(self):
-        self.show()
-
-    def hide_loading(self):
-        self.hide()
-
-
-class Worker(QThread):
-    task_completed = Signal()
-
-    def run(self):
-        # Simulate a long-running task
-        while not window.logged_in:
-            time.sleep(.1)
-        self.task_completed.emit()
-
-
 class AllClassesQMessageBox(QDialog):
     """This is used to get a message box before exporting data for all classes"""
     def __init__(self, title, message, combo_options, scope, parent=None):
