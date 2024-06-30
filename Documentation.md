@@ -15,39 +15,3 @@ Additionally, the user can click more next to a term and open the assignments me
 **Exporting Data** The program allows the user to export their data through either a PDF or an Excel spreadsheet. The user would enter the Export Data screen, and from there, they would choose the scope of their output report, the class (if applicable), and other information such as their name. From here, a report will be generated in either Excel or in the form of a PDF.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Information about each Class**
-
